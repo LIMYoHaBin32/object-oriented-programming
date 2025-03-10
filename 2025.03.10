@@ -1,0 +1,136 @@
+예제 1
+#include <Arduino_FreeRTOS.h>
+
+TaskHandle_t task1Handle = NULL;
+TaskHandle_t task2Handle = NULL;
+
+void printTask(void* taskName);
+
+void setup()
+{
+  Serial.begin(115200);
+  Serial.println(F("Setup"));
+  
+  xTaskCreate(printTask, "Task1", 128, (void*) "Task1", 1, &task1Handle);
+  
+  xTaskCreate(printTask, "Task2", 128, (void*)"Task2", 2, &task2Handle);
+}
+
+void loop()
+{
+}
+
+void printTask(void* pvParameters)
+{
+  char* taskName = (char*)pvParameters;
+  
+  TickType_t xDelay = pdMS_TO_TICKS(1000); 
+  
+  if (strcmp(taskName, "Task2") == 0)
+  {
+    xDelay = pdMS_TO_TICKS(2000); 
+  }
+  
+  for (;;)
+  {
+    Serial.println(taskName);
+    vTaskDelay(xDelay);
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+예제 2
+#include <Arduino_FreeRTOS.h>
+
+typedef struct
+{
+  const char* name;
+  const char* status;
+  uint16_t delay;
+} TaskParams;
+
+void genericTask(void* parameters);
+
+void setup()
+{
+  Serial.begin(115200);
+  
+  static TaskParams task1Params = {"Task1", "Running", 500};
+  static TaskParams task2Params = {"Task2", "Working", 1000};
+  static TaskParams task3Params = {"Task3", "Processing", 1500};
+  
+  xTaskCreate(genericTask, "Status1", 128, (void*)&task1Params, 1, NULL);
+  
+  xTaskCreate(genericTask, "Status2", 128, (void*)&task2Params, 2, NULL);
+  
+  xTaskCreate(genericTask, "Status3", 128, (void*)&task3Params, 3, NULL);
+}
+
+void loop()
+{
+}
+
+void genericTask(void* pvParameters)
+{
+  TaskParams* params = (TaskParams*)pvParameters;
+  
+  for (;;)
+  {
+    Serial.print(params->name);
+    Serial.print(" ");
+    Serial.println(params->status);
+    
+    vTaskDelay(pdMS_TO_TICKS(params->delay));
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+예제 3
+#include <Arduino_FreeRTOS.h>
+
+void CounterTask(void* pvParameters);
+
+typedef struct
+{
+  const char* taskName;  
+  int* counterPtr;       
+  uint16_t delayTime;  
+  
+int count1 = 0;
+int count2 = 0;
+int count3 = 0;
+
+void setup()
+{
+  Serial.begin(115200);
+  
+  static TaskConfig task1Config = {"Task1", &count1, 300};
+  static TaskConfig task2Config = {"Task2", &count2, 700};
+  static TaskConfig task3Config = {"Task3", &count3, 1000};
+  
+  xTaskCreate(CounterTask, "Counter1", 128, &task1Config, 1, NULL);
+  
+  xTaskCreate(CounterTask, "Counter2", 128, &task2Config, 2, NULL);
+  
+  xTaskCreate(CounterTask, "Counter3", 128, &task3Config, 3, NULL);
+}
+
+void loop()
+{
+}
+
+void CounterTask(void* pvParameters)
+{
+  TaskConfig* config = (TaskConfig*)pvParameters;
+  
+  for (;;)
+  {
+    Serial.print(config->taskName);
+    Serial.print(F(" Count: "));
+    Serial.println((*config->counterPtr)++);
+    
+    vTaskDelay(pdMS_TO_TICKS(config->delayTime));
+  }
+}
