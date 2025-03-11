@@ -4,7 +4,7 @@
 #include <queue.h>
 #include <NewPing.h>
 
-#define SONAR_COUNT 4  // 초음파 센서 개수
+#define SONAR_COUNT 4 
 
 const uint8_t TRIGGER_PINS[SONAR_COUNT] = {22, 24, 26, 28};
 const uint8_t ECHO_PINS[SONAR_COUNT] = {23, 25, 27, 29};
